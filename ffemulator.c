@@ -45,7 +45,13 @@ static int ffe_release(struct inode *inode, struct file *filp)
 static ssize_t ffe_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 {
 	pr_info("%s", __func__);
-	return 0;
+	if (count > size)
+		count = size;
+	if (copy_to_user(buf, frame, count)) {
+		pr_err("%s: read error..!", __func__);
+		return -EFAULT;
+	}
+	return count;
 }
 
 static long ffe_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
