@@ -16,7 +16,6 @@
 #define V360P _IOW('a', 'b', int*)
 #define V480P _IOW('a', 'c', int*)
 #define V720P _IOW('a', 'd', int*)
-#define V1080P _IOW('a', 'e', int*)
 
 dev_t dev;
 struct class *ffe_class;
@@ -27,7 +26,26 @@ uint8_t *frame;
 
 static void create_frame(void)
 {
+	long temp = size/3;
+	int i;
+
 	pr_info("%s", __func__);
+	for (i = 0; i < temp; i += 3) {
+		frame[i] = 0xff;
+		frame[i+1] = 0x00;
+		frame[i+2] = 0x00;
+	}
+	temp = temp*2;
+	for (; i < temp; i += 3) {
+		frame[i] = 0x00;
+		frame[i+1] = 0xff;
+		frame[i+2] = 0x00;
+	}
+	for (; i < size; i += 3) {
+		frame[i] = 0x00;
+		frame[i+1] = 0x00;
+		frame[i+2] = 0xff;
+	}
 }
 
 static int ffe_open(struct inode *inode, struct file *filp)
@@ -70,9 +88,6 @@ static long ffe_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 	case V720P:
 		size = 2764800;		//size = 1280x720x3
-		break;
-	case V1080P:
-		size = 6220800;		//size = 1920x1080x3
 		break;
 	default:
 		break;
